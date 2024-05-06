@@ -1,6 +1,7 @@
-import boto3
+import logging
 import os
-import io
+
+import boto3
 
 s3 = boto3.client(
     service_name="s3",
@@ -10,7 +11,17 @@ s3 = boto3.client(
     region_name="wnam",  # Must be one of: wnam, enam, weur, eeur, apac, auto
 )
 
-# Upload/Update single file
-s3.upload_fileobj(io.BytesIO(
-    open("graph.obj", "rb").read()
-), "wagon-otp-graph", "graph.obj")
+logger = logging.getLogger(__name__)
+
+available_files = os.listdir()
+if 'graph.obj' not in available_files:
+    logger.info("Available files:")
+    for file in available_files:
+        logger.info(file)
+    logger.error("File graph.obj not found in current directory")
+    exit(1)
+
+file_size_mb = os.path.getsize('graph.obj') / 1024 / 1024
+logger.info(f"Uploading file of size {file_size_mb:.2f} MB")
+
+s3.upload_file('graph.obj', 'wagon-otp-graph', 'graph.obj')
