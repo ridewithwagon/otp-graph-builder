@@ -1,0 +1,7 @@
+version: "3.9"
+
+services:
+  otp-graph-builder:
+    build:
+      context: .
+      dockerfile: Dockerfile
