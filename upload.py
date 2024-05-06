@@ -10,6 +10,11 @@ s3 = boto3.client(
     region_name="wnam",  # Must be one of: wnam, enam, weur, eeur, apac, auto
 )
 
+# print current directory
+print(os.getcwd())
+# print all files and directories in current directory
+print(os.listdir())
+
 # Upload/Update single file
 s3.upload_fileobj(io.BytesIO(
     open("graph.obj", "rb").read()
