@@ -1,0 +1,31 @@
+{
+    "transitModelTimeZone": "Europe/Paris",
+    "osm": [
+        {
+            "source": "https://download.geofabrik.de/europe/cyprus-latest.osm.pbf"
+        },
+        {
+            "source": "https://cdn1.arno.cl/2024/09/toulouse.osm.pbf"
+        },
+        {
+            "source": "https://cdn1.arno.cl/2024/05/nice.osm.pbf"
+        }
+    ],
+    "transitFeeds": [
+        {
+            "feedId": "cy-all",
+            "type": "gtfs",
+            "source": "./cy-all.zip"
+        },
+        {
+            "feedId": "fr-rla",
+            "type": "gtfs",
+            "source": "./fr-rla.zip"
+        },
+        {
+            "feedId": "fr-tou",
+            "type": "gtfs",
+            "source": "./fr-tou.zip"
+        }
+    ]
+}

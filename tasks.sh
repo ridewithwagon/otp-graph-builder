@@ -1,9 +1,7 @@
-wget https://eu.ftp.opendatasoft.com/stif/GTFS/IDFM-gtfs.zip -O idfm.gtfs.zip
-wget https://transport.data.gouv.fr/resources/79642/download -O rla.gtfs.zip
+wget "https://www.motionbuscard.org.cy/opendata/downloadfile?file=GTFS%5C9_google_transit.zip&rel=True" -O ./cy-all.zip
+wget "https://transport.data.gouv.fr/resources/79642/download" -O ./fr-rla.zip
+wget "https://data.toulouse-metropole.fr/explore/dataset/tisseo-gtfs/files/fc1dda89077cf37e4f7521760e0ef4e9/download/" -O ./fr-tou.zip
 
-wget http://download.geofabrik.de/europe/france/ile-de-france-latest.osm.pbf
-wget https://cdn1.arno.cl/2024%2F05%2Fnice.osm.pbf
-
-java -Xmx18G -jar otp-2.5.0-shaded.jar --build --save .
+java -Xmx4G -jar otp-2.5.0-shaded.jar --build --save .
 
 python3 upload.py
