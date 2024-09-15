@@ -13,9 +13,39 @@
     ],
     "transitFeeds": [
         {
-            "feedId": "cy-all",
+            "feedId": "cy-006",
             "type": "gtfs",
-            "source": "./cy-all.zip"
+            "source": "./cy-006/"
+        },
+        {
+            "feedId": "cy-002",
+            "type": "gtfs",
+            "source": "./cy-002.zip"
+        },
+        {
+            "feedId": "cy-004",
+            "type": "gtfs",
+            "source": "./cy-004/"
+        },
+        {
+            "feedId": "cy-005",
+            "type": "gtfs",
+            "source": "./cy-005.zip"
+        },
+        {
+            "feedId": "cy-009",
+            "type": "gtfs",
+            "source": "./cy-009.zip"
+        },
+        {
+            "feedId": "cy-010",
+            "type": "gtfs",
+            "source": "./cy-010.zip"
+        },
+        {
+            "feedId": "cy-011",
+            "type": "gtfs",
+            "source": "./cy-011.zip"
         },
         {
             "feedId": "fr-rla",
