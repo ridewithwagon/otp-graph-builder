@@ -18,7 +18,10 @@ def cyprus_parent_station_name(stop_name: str):
     """
     Generate the parent_station name for Cyprus
     """
-    return stop_name.split(" - ")[0]
+    if (stop_name[-1].isdigit() or stop_name[-1].isupper()) and stop_name[-2] == " ":
+        return stop_name[:-2]
+
+    return stop_name
 
 
 sources: List[SourceDict] = [
@@ -156,21 +159,24 @@ def auto_generate_parent_stations(feed_id: str, get_parent_station_name: Callabl
                     "stop_name": parent_station_name,
                     "stop_lat": stop["stop_lat"],
                     "stop_lon": stop["stop_lon"],
-                    "location_type": 1
+                    "location_type": "1"
                 }
             stop["parent_station"] = parent_station_id
 
     if "parent_station" not in header:
         header.append("parent_station")
 
+    if "location_type" not in header:
+        header.append("location_type")
+
     # Write the new stops.txt file
     with open(f"{feed_id}/stops.txt", "w") as f:
         f.write(",".join(header) + "\n")
-        for stop in stops:
-            f.write(",".join([stop.get(h, "") for h in header]) + "\n")
         for parent_station in parent_stations.values():
             f.write(
                 ",".join([parent_station.get(h, "") for h in header]) + "\n")
+        for stop in stops:
+            f.write(",".join([stop.get(h, "") for h in header]) + "\n")
 
 
 def cat(file: str, line_contains: Optional[str] = None):
