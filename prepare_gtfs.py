@@ -77,8 +77,7 @@ sources: List[SourceDict] = [
         "fix_duplicated_routes": True
     },
     {
-        # "url": "https://transport.data.gouv.fr/resources/79642/download",
-        "url": "https://opendata.nicecotedazur.org/data/dataset/export-quotidien-au-format-gtfs-du-reseau-de-transport-lignes-d-azur/resource/aacb4eea-d008-4b13-b17a-848b8ced7e03/download",
+        "url": "https://transport.data.gouv.fr/resources/79642/download",
         "feed_id": "fr-rla",
         "parent_station_name": None,
         "fix_fares": False
@@ -302,4 +301,4 @@ def main(only: Optional[str] = None):
 
 
 if __name__ == "__main__":
-    main()
+    main(only="fr-rla")
