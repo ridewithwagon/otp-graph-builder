@@ -1,8 +1,9 @@
+import csv
 import hashlib
 import json
 import os
 import zipfile
-from typing import Callable, List, Optional, TypedDict
+from typing import Callable, List, NotRequired, Optional, TypedDict
 
 import requests
 
@@ -11,7 +12,8 @@ class SourceDict(TypedDict):
     url: str
     feed_id: str
     parent_station_name: Optional[Callable[[str], str]]
-    fix_fares: bool
+    fix_fares: NotRequired[bool]
+    fix_duplicated_routes: NotRequired[bool]
 
 
 def cyprus_parent_station_name(stop_name: str):
@@ -29,43 +31,50 @@ sources: List[SourceDict] = [
         "url": "https://www.motionbuscard.org.cy/opendata/downloadfile?file=GTFS%5C6_google_transit.zip&rel=True",
         "feed_id": "cy-006",
         "parent_station_name": cyprus_parent_station_name,
-        "fix_fares": True
+        "fix_fares": True,
+        "fix_duplicated_routes": True
     },
     {
         "url": "https://www.motionbuscard.org.cy/opendata/downloadfile?file=GTFS%5C2_google_transit.zip&rel=True",
         "feed_id": "cy-002",
         "parent_station_name": cyprus_parent_station_name,
-        "fix_fares": False
+        "fix_fares": False,
+        "fix_duplicated_routes": True
     },
     {
         "url": "https://www.motionbuscard.org.cy/opendata/downloadfile?file=GTFS%5C4_google_transit.zip&rel=True",
         "feed_id": "cy-004",
         "parent_station_name": cyprus_parent_station_name,
-        "fix_fares": True
+        "fix_fares": True,
+        "fix_duplicated_routes": True
     },
     {
         "url": "https://www.motionbuscard.org.cy/opendata/downloadfile?file=GTFS%5C5_google_transit.zip&rel=True",
         "feed_id": "cy-005",
         "parent_station_name": cyprus_parent_station_name,
-        "fix_fares": False
+        "fix_fares": False,
+        "fix_duplicated_routes": True
     },
     {
         "url": "https://www.motionbuscard.org.cy/opendata/downloadfile?file=GTFS%5C9_google_transit.zip&rel=True",
         "feed_id": "cy-009",
         "parent_station_name": cyprus_parent_station_name,
-        "fix_fares": False
+        "fix_fares": False,
+        "fix_duplicated_routes": True
     },
     {
         "url": "https://www.motionbuscard.org.cy/opendata/downloadfile?file=GTFS%5C10_google_transit.zip&rel=True",
         "feed_id": "cy-010",
         "parent_station_name": cyprus_parent_station_name,
-        "fix_fares": False
+        "fix_fares": False,
+        "fix_duplicated_routes": True
     },
     {
         "url": "https://www.motionbuscard.org.cy/opendata/downloadfile?file=GTFS%5C11_google_transit.zip&rel=True",
         "feed_id": "cy-011",
         "parent_station_name": cyprus_parent_station_name,
-        "fix_fares": False
+        "fix_fares": False,
+        "fix_duplicated_routes": True
     },
     {
         # "url": "https://transport.data.gouv.fr/resources/79642/download",
@@ -124,6 +133,70 @@ def fix_fares_attributes(feed_id: str):
     # TODO: Parse file to detect fares_rules errors
     os.remove(f"{feed_id}/fare_rules.txt")
     os.remove(f"{feed_id}/fare_attributes.txt")
+
+
+def replace_column_in_file(input_file: str, column: str, mapper: dict[str, str]):
+    """
+    Replace a column in a file with a mapper
+    """
+    print(f"Replacing column {column} in {input_file}")
+    temp_file = input_file + '.tmp'  # Crée un nom de fichier temporaire
+
+    # Ouvre le fichier d'entrée en lecture et le fichier temporaire en écriture
+    with open(input_file, mode='r', newline='', encoding='utf-8-sig') as infile, \
+            open(temp_file, mode='w', newline='', encoding='utf-8') as outfile:
+
+        reader = csv.DictReader(infile)
+        fieldnames = reader.fieldnames
+        writer = csv.DictWriter(outfile, fieldnames=fieldnames)
+
+        writer.writeheader()
+
+        for row in reader:
+            if row[column] in mapper:
+                row[column] = mapper[row[column]]
+
+            writer.writerow(row)
+
+    os.replace(temp_file, input_file)
+
+
+def fix_duplicated_routes(feed_id: str):
+    """
+    Fix duplicated routes by merging them based on their short_name and background_color
+    """
+
+    # New route id and route details
+    routes = {}
+    map_old_route_id_to_new_key = {}
+
+    with open(f"{feed_id}/routes.txt", "r", encoding="utf-8-sig") as f:
+        header = f.readline().strip().split(",")
+        for line in f:
+            route = dict(zip(header, line.strip().split(",")))
+
+            # Check if route already exists
+            key = hashlib.sha1(
+                (route["route_short_name"] + route["route_color"]).encode()).hexdigest()
+
+            map_old_route_id_to_new_key[route["route_id"]] = key
+            route["route_id"] = key
+
+            if key not in routes:
+                routes[key] = route
+
+    files_to_fix = ["trips.txt", "calendar.txt", "fare_rules.txt"]
+
+    for file in files_to_fix:
+        if os.path.exists(f"{feed_id}/{file}"):
+            replace_column_in_file(
+                f"{feed_id}/{file}", "route_id", map_old_route_id_to_new_key)
+
+    # Remove duplicated routes in routes.txt
+    with open(f"{feed_id}/routes.txt", "w") as f:
+        f.write(",".join(header) + "\n")
+        for route in routes.values():
+            f.write(",".join([route.get(h, "") for h in header]) + "\n")
 
 
 def stop_name_to_id(stop_name: str):
@@ -200,6 +273,9 @@ def generate_otp_build_config(only: Optional[str] = None):
             "feedId": source["feed_id"]
         })
 
+    if only is not None:
+        otp_build_config["osm"] = []
+
     with open("build-config.json", "w") as f:
         f.write(json.dumps(otp_build_config, indent=2))
 
@@ -214,12 +290,15 @@ def main(only: Optional[str] = None):
         download_and_extract(source)
         feed_id = source["feed_id"]
 
-        if source["fix_fares"]:
+        if "fix_fares" in source and source["fix_fares"]:
             fix_fares_attributes(feed_id)
 
         if source["parent_station_name"]:
             auto_generate_parent_stations(
                 feed_id, source["parent_station_name"])
+
+        if "fix_duplicated_routes" in source and source["fix_duplicated_routes"]:
+            fix_duplicated_routes(feed_id)
 
 
 if __name__ == "__main__":
