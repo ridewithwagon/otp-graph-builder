@@ -1,8 +1,10 @@
-import requests
+import hashlib
+import json
 import os
 import zipfile
-import json
-from typing import Callable, TypedDict, List, Optional
+from typing import Callable, List, Optional, TypedDict
+
+import requests
 
 
 class SourceDict(TypedDict):
@@ -121,6 +123,13 @@ def fix_fares_attributes(feed_id: str):
     os.remove(f"{feed_id}/fare_attributes.txt")
 
 
+def stop_name_to_id(stop_name: str):
+    """
+    Return sha1 of stop_name
+    """
+    return hashlib.sha1(stop_name.encode()).hexdigest()
+
+
 def auto_generate_parent_stations(feed_id: str, get_parent_station_name: Callable[[str], str]):
     """
     Find all stops without parent_station and generate the parent_station
@@ -140,7 +149,7 @@ def auto_generate_parent_stations(feed_id: str, get_parent_station_name: Callabl
     for stop in stops:
         if "parent_station" not in stop or stop["parent_station"] == "":
             parent_station_name = get_parent_station_name(stop["stop_name"])
-            parent_station_id = f"{parent_station_name}::auto_generated"
+            parent_station_id = stop_name_to_id(parent_station_name)
             if parent_station_name not in parent_stations:
                 parent_stations[parent_station_name] = {
                     "stop_id": parent_station_id,
