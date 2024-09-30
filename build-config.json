@@ -20,7 +20,7 @@
         {
             "feedId": "cy-002",
             "type": "gtfs",
-            "source": "./cy-002.zip"
+            "source": "./cy-002/"
         },
         {
             "feedId": "cy-004",
@@ -30,32 +30,32 @@
         {
             "feedId": "cy-005",
             "type": "gtfs",
-            "source": "./cy-005.zip"
+            "source": "./cy-005/"
         },
         {
             "feedId": "cy-009",
             "type": "gtfs",
-            "source": "./cy-009.zip"
+            "source": "./cy-009/"
         },
         {
             "feedId": "cy-010",
             "type": "gtfs",
-            "source": "./cy-010.zip"
+            "source": "./cy-010/"
         },
         {
             "feedId": "cy-011",
             "type": "gtfs",
-            "source": "./cy-011.zip"
+            "source": "./cy-011/"
         },
         {
             "feedId": "fr-rla",
             "type": "gtfs",
-            "source": "./fr-rla.zip"
+            "source": "./fr-rla/"
         },
         {
             "feedId": "fr-tou",
             "type": "gtfs",
-            "source": "./fr-tou.zip"
+            "source": "./fr-tou/"
         }
     ]
 }
