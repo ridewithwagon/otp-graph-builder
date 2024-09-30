@@ -12,6 +12,7 @@ s3 = boto3.client(
 )
 
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 available_files = os.listdir()
 if 'graph.obj' not in available_files:

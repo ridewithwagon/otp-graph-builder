@@ -1,6 +1,7 @@
 import requests
 import os
 import zipfile
+import json
 from typing import Callable, TypedDict, List, Optional
 
 
@@ -75,6 +76,23 @@ sources: List[SourceDict] = [
         "fix_fares": False
     }
 ]
+
+
+otp_build_config = {
+    "transitModelTimeZone": "Europe/Paris",
+    "osm": [
+        {
+            "source": "https://download.geofabrik.de/europe/cyprus-latest.osm.pbf"
+        },
+        {
+            "source": "https://cdn1.arno.cl/2024/09/toulouse.osm.pbf"
+        },
+        {
+            "source": "https://cdn1.arno.cl/2024/05/nice.osm.pbf"
+        }
+    ],
+    "transitFeeds": []
+}
 
 
 def download_and_extract(source: SourceDict):
@@ -153,17 +171,41 @@ def cat(file: str, line_contains: Optional[str] = None):
                 print(line.strip())
 
 
-def main():
+def generate_otp_build_config(only: Optional[str] = None):
+    """
+    Generate the build-config.json for OTP
+    """
+    for source in sources:
+        if only is not None and source["feed_id"] != only:
+            continue
+
+        otp_build_config["transitFeeds"].append({
+            "source": f"./{source['feed_id']}/",
+            "type": "gtfs",
+            "feedId": source["feed_id"]
+        })
+
+    with open("build-config.json", "w") as f:
+        f.write(json.dumps(otp_build_config, indent=2))
+
+
+def main(only: Optional[str] = None):
+    generate_otp_build_config(only)
 
     for source in sources:
+        if only is not None and source["feed_id"] != only:
+            continue
+
         download_and_extract(source)
         feed_id = source["feed_id"]
+
         if source["fix_fares"]:
             fix_fares_attributes(feed_id)
+
         if source["parent_station_name"]:
             auto_generate_parent_stations(
                 feed_id, source["parent_station_name"])
 
 
 if __name__ == "__main__":
-    main()
+    main(only="cy-009")
