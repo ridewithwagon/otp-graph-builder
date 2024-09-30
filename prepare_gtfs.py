@@ -302,4 +302,4 @@ def main(only: Optional[str] = None):
 
 
 if __name__ == "__main__":
-    main(only="cy-009")
+    main()
