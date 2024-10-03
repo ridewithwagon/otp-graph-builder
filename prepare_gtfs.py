@@ -10,8 +10,9 @@ import requests
 
 class SourceDict(TypedDict):
     url: str
+    url_fallback_static: NotRequired[str]
     feed_id: str
-    parent_station_name: Optional[Callable[[str], str]]
+    parent_station_name: NotRequired[Callable[[str], str]]
     fix_fares: NotRequired[bool]
     fix_duplicated_routes: NotRequired[bool]
 
@@ -78,32 +79,18 @@ sources: List[SourceDict] = [
     },
     {
         "url": "https://transport.data.gouv.fr/resources/79642/download",
+        "url_fallback_static": "https://cdn1.arno.cl/2024/10/RLA-20241003.zip",
         "feed_id": "fr-rla",
-        "parent_station_name": None,
-        "fix_fares": False
     },
     {
         "url": "https://data.toulouse-metropole.fr/explore/dataset/tisseo-gtfs/files/fc1dda89077cf37e4f7521760e0ef4e9/download/",
         "feed_id": "fr-tou",
-        "parent_station_name": None,
-        "fix_fares": False
     }
 ]
 
 
 otp_build_config = {
     "transitModelTimeZone": "Europe/Paris",
-    "osm": [
-        {
-            "source": "https://download.geofabrik.de/europe/cyprus-latest.osm.pbf"
-        },
-        {
-            "source": "https://cdn1.arno.cl/2024/09/toulouse.osm.pbf"
-        },
-        {
-            "source": "https://cdn1.arno.cl/2024/05/nice.osm.pbf"
-        }
-    ],
     "transitFeeds": []
 }
 
@@ -114,8 +101,18 @@ def download_and_extract(source: SourceDict):
     """
     feed_id = source["feed_id"]
     url = source["url"]
-    response = requests.get(url)
-    response.raise_for_status()
+
+    try:
+        response = requests.get(url)
+        response.raise_for_status()
+    except requests.exceptions.HTTPError as e:
+        print(f"Error downloading {url}: {e}")
+        if "url_fallback_static" in source:
+            print("Trying fallback url")
+            response = requests.get(source["url_fallback_static"])
+            response.raise_for_status()
+        else:
+            return
 
     os.makedirs(feed_id, exist_ok=True)
     with open(f"{feed_id}/{feed_id}.zip", "wb") as f:
@@ -292,7 +289,7 @@ def main(only: Optional[str] = None):
         if "fix_fares" in source and source["fix_fares"]:
             fix_fares_attributes(feed_id)
 
-        if source["parent_station_name"]:
+        if "parent_station_name" in source and source["parent_station_name"]:
             auto_generate_parent_stations(
                 feed_id, source["parent_station_name"])
 

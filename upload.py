@@ -15,14 +15,17 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 available_files = os.listdir()
-if 'graph.obj' not in available_files:
-    logger.info("Available files:")
-    for file in available_files:
-        logger.info(file)
-    logger.error("File graph.obj not found in current directory")
-    exit(1)
 
-file_size_mb = os.path.getsize('graph.obj') / 1024 / 1024
-logger.info(f"Uploading file of size {file_size_mb:.2f} MB")
 
-s3.upload_file('graph.obj', 'wagon-otp-graph', 'graph.obj')
+def upload_if_exists(file_name):
+    if file_name in available_files:
+        file_size_mb = os.path.getsize(file_name) / 1024 / 1024
+        logger.info(f"Uploading {file_name} of size {file_size_mb:.2f} MB")
+
+        s3.upload_file(file_name, 'wagon-otp-graph', file_name)
+    else:
+        logger.info(f"File {file_name} not found")
+
+
+upload_if_exists("streetGraph.obj")
+upload_if_exists("graph.obj")

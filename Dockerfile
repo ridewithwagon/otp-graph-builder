@@ -10,6 +10,7 @@ RUN wget https://repo1.maven.org/maven2/org/opentripplanner/otp/2.5.0/otp-2.5.0-
 COPY tasks.sh /app/tasks.sh
 COPY upload.py /app/upload.py
 COPY prepare_gtfs.py /app/prepare_gtfs.py
+COPY prepare_osm.py /app/prepare_osm.py
 
 RUN chmod +x /app/tasks.sh
 
