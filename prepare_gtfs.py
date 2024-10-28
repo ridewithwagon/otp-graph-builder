@@ -85,6 +85,10 @@ sources: List[SourceDict] = [
     {
         "url": "https://data.toulouse-metropole.fr/explore/dataset/tisseo-gtfs/files/fc1dda89077cf37e4f7521760e0ef4e9/download/",
         "feed_id": "fr-tou",
+    },
+    {
+        "url": "https://eu.ftp.opendatasoft.com/stif/GTFS/IDFM-gtfs.zip",
+        "feed_id": "fr-idf",
     }
 ]
 
