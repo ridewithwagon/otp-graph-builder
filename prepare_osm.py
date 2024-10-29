@@ -10,6 +10,9 @@ otp_build_config = {
         },
         {
             "source": "https://cdn1.arno.cl/2024/05/nice.osm.pbf"
+        },
+        {
+            "source": "https://download.geofabrik.de/europe/france/ile-de-france-latest.osm.pbf"
         }
     ],
 }
