@@ -89,6 +89,10 @@ sources: List[SourceDict] = [
     {
         "url": "https://eu.ftp.opendatasoft.com/stif/GTFS/IDFM-gtfs.zip",
         "feed_id": "fr-idf",
+    },
+    {
+        "url": "https://github.com/ridewithwagon/kapnos-airport-shuttle-GTFS/raw/refs/heads/main/output.zip",
+        "feed_id": "cy-kas",
     }
 ]
 
