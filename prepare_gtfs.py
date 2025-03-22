@@ -39,7 +39,7 @@ sources: List[SourceDict] = [
         "url": "https://www.motionbuscard.org.cy/opendata/downloadfile?file=GTFS%5C2_google_transit.zip&rel=True",
         "feed_id": "cy-002",
         "parent_station_name": cyprus_parent_station_name,
-        "fix_fares": False,
+        "fix_fares": True,
         "fix_duplicated_routes": True
     },
     {
@@ -53,28 +53,28 @@ sources: List[SourceDict] = [
         "url": "https://www.motionbuscard.org.cy/opendata/downloadfile?file=GTFS%5C5_google_transit.zip&rel=True",
         "feed_id": "cy-005",
         "parent_station_name": cyprus_parent_station_name,
-        "fix_fares": False,
+        "fix_fares": True,
         "fix_duplicated_routes": True
     },
     {
         "url": "https://www.motionbuscard.org.cy/opendata/downloadfile?file=GTFS%5C9_google_transit.zip&rel=True",
         "feed_id": "cy-009",
         "parent_station_name": cyprus_parent_station_name,
-        "fix_fares": False,
+        "fix_fares": True,
         "fix_duplicated_routes": True
     },
     {
         "url": "https://www.motionbuscard.org.cy/opendata/downloadfile?file=GTFS%5C10_google_transit.zip&rel=True",
         "feed_id": "cy-010",
         "parent_station_name": cyprus_parent_station_name,
-        "fix_fares": False,
+        "fix_fares": True,
         "fix_duplicated_routes": True
     },
     {
         "url": "https://www.motionbuscard.org.cy/opendata/downloadfile?file=GTFS%5C11_google_transit.zip&rel=True",
         "feed_id": "cy-011",
         "parent_station_name": cyprus_parent_station_name,
-        "fix_fares": False,
+        "fix_fares": True,
         "fix_duplicated_routes": True
     },
     {
@@ -132,11 +132,35 @@ def download_and_extract(source: SourceDict):
 
 def fix_fares_attributes(feed_id: str):
     """
-    Fix the fares.txt file in the GTFS feed
+    Fix the fares.txt file in the GTFS feed by keeping only the most expensive fare per fare_id.
     """
-    # TODO: Parse file to detect fares_rules errors
-    os.remove(f"{feed_id}/fare_rules.txt")
-    os.remove(f"{feed_id}/fare_attributes.txt")
+    fares_file = f"{feed_id}/fare_attributes.txt"
+
+    if not os.path.exists(fares_file):
+        print(f"File {fares_file} not found.")
+        return
+
+    fares = {}
+
+    with open(fares_file, mode='r', encoding='utf-8-sig') as file:
+        reader = csv.DictReader(file)
+        for row in reader:
+            fare_id = row["fare_id"]
+            price = float(row["price"])
+
+            if fare_id not in fares or price > fares[fare_id]["price"]:
+                fares[fare_id] = row
+                # Ensure price is stored as float
+                fares[fare_id]["price"] = price
+
+    with open(fares_file, mode='w', encoding='utf-8', newline='') as file:
+        fieldnames = ["fare_id", "price", "currency_type",
+                      "payment_method", "transfers", "agency_id", "transfer_duration"]
+        writer = csv.DictWriter(file, fieldnames=fieldnames)
+        writer.writeheader()
+
+        for fare in fares.values():
+            writer.writerow(fare)
 
 
 def replace_column_in_file(input_file: str, column: str, mapper: dict[str, str]):
