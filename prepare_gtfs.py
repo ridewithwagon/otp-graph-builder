@@ -163,6 +163,78 @@ def fix_fares_attributes(feed_id: str):
             writer.writerow(fare)
 
 
+def add_IDFM_fares():
+    """
+    Add fares to IDFM GTFS feed
+    """
+    feed_id = "fr-idf"
+
+    fare_products = "\n".join(["fare_product_id,name,fare_media_id,amount,currency,duration",
+                               "ticket_bus_tram,Ticket Bus-Tram,navigo_easy,2.00,EUR,5400",
+                               "ticket_metro_train_rer,Ticket Métro-Train-RER,navigo_easy,2.50,EUR,7200",
+                               "ticket_airport,Ticket Paris Région <> Aéroports,navigo_easy,13.00,EUR,7200"])
+
+    fare_leg_rules = "\n".join(
+        ["network_id,from_area_id,to_area_id,fare_product_id",
+         #  ",area_airport,,ticket_airport",
+         #  ",,area_airport,ticket_airport",
+         "network_rer,,,ticket_metro_train_rer",
+         "network_transilien,,,ticket_metro_train_rer",
+         "network_bus,,,ticket_bus_tram",
+         "network_tram,,,ticket_bus_tram",
+         "network_tram_express,,,ticket_metro_train_rer",
+         "network_metro,,,ticket_metro_train_rer"])
+
+    fare_media = "\n".join(["fare_media_id,fare_media_name,fare_media_type",
+                            "navigo_easy,Navigo Easy,2",
+                            "idfm_app,Application Île-de-France Mobilités,4",
+                            "ios_wallet,Apple Wallet,4"])
+
+    rider_categories = "\n".join(["rider_category_id,rider_category_name,is_default_fare_category,eligibility_url",
+                                  "default,Plein tarif,1,",
+                                  "reduced,Tarif réduit,0,https://www.iledefrance-mobilites.fr/titres-et-tarifs/tarifs-reduits"])
+
+    networks = "\n".join(["network_id,network_name",
+                          "network_rer", "RER",
+                          "network_transilien", "Transilien",
+                          "network_bus", "Bus",
+                          "network_tram", "Tramway",
+                          "network_tram_express", "Tramway Express",
+                          "network_metro", "Métro",])
+
+    route_networks = "route_id,network_id"
+
+    with open(f"{feed_id}/routes.txt", "r") as f:
+        header = f.readline().strip().split(",")
+        for line in f:
+            route = dict(zip(header, line.strip().split(",")))
+
+            if route["route_type"] == "3":
+                network_id = "network_bus"
+            elif route["route_type"] == "1":
+                network_id = "network_metro"
+            if route["route_short_name"] in ["T1", "T2", "T3a", "T3b", "T4", "T5", "T6", "T7", "T8", "T9", "T10"]:
+                network_id = "network_tram"
+            elif route["route_short_name"] in ["T11", "T12", "T13", "T14"]:
+                network_id = "network_tram_express"
+            elif route["route_short_name"] >= "E":
+                network_id = "network_transilien"
+            else:
+                network_id = "network_rer"
+
+            route_networks += f"{route['route_id']},{network_id}\n"
+
+    files = [("fare_products.txt", fare_products),
+             ("fare_leg_rules.txt", fare_leg_rules),
+             ("fare_media.txt", fare_media),
+             ("rider_categories.txt", rider_categories),
+             ("networks.txt", networks),
+             ("route_networks.txt", route_networks)]
+    for filename, content in files:
+        with open(f"{feed_id}/" + filename, "w") as f:
+            f.write(content)
+
+
 def replace_column_in_file(input_file: str, column: str, mapper: dict[str, str]):
     """
     Replace a column in a file with a mapper
@@ -308,8 +380,23 @@ def generate_otp_build_config(only: Optional[str] = None):
         f.write(json.dumps(otp_build_config, indent=2))
 
 
+def generate_otp_config():
+    """
+    Generate the otp-config.json for OTP
+    """
+    otp_config = {
+        "otpFeatures": {
+            "FaresV2": True
+        }
+    }
+
+    with open("otp-config.json", "w") as f:
+        f.write(json.dumps(otp_config, indent=2))
+
+
 def main(only: Optional[str] = None):
     generate_otp_build_config(only)
+    generate_otp_config()
 
     for source in sources:
         if only is not None and source["feed_id"] != only:
@@ -328,6 +415,9 @@ def main(only: Optional[str] = None):
         if "fix_duplicated_routes" in source and source["fix_duplicated_routes"]:
             fix_duplicated_routes(feed_id)
 
+        if feed_id == "fr-idf":
+            add_IDFM_fares()
+
 
 if __name__ == "__main__":
-    main()
+    main(only="fr-idf")
