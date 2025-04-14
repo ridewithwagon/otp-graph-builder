@@ -169,38 +169,68 @@ def add_IDFM_fares():
     """
     feed_id = "fr-idf"
 
-    fare_products = "\n".join(["fare_product_id,name,fare_media_id,amount,currency,duration",
-                               "ticket_bus_tram,Ticket Bus-Tram,navigo_easy,2.00,EUR,5400",
-                               "ticket_metro_train_rer,Ticket Métro-Train-RER,navigo_easy,2.50,EUR,7200",
-                               "ticket_airport,Ticket Paris Région <> Aéroports,navigo_easy,13.00,EUR,7200"])
+    fare_media = "\n".join(
+        ["fare_media_id,fare_media_name,fare_media_type",
+         "navigo_easy,Navigo Easy,2",
+         "idfm_app,Application Île-de-France Mobilités,4",
+         "ios_wallet,Apple Wallet,4"
+         "mastercard,,3"])
 
+    rider_categories = "\n".join(
+        ["rider_category_id,rider_category_name,is_default_fare_category,eligibility_url",
+         "default,Plein tarif,1,",
+         "reduced,Tarif réduit,0,https://www.iledefrance-mobilites.fr/titres-et-tarifs/tarifs-reduits"])
+
+    fare_products = "\n".join(
+        ["fare_product_id,fare_product_name,rider_category_id,fare_media_id,amount,currency",
+         "ticket_bus_tram,Ticket Bus-Tram,default,navigo_easy,2.00,EUR",
+         "ticket_metro_train_rer,Ticket Métro-Train-RER,default,navigo_easy,2.50,EUR",
+         "ticket_airport,Ticket Paris Région <> Aéroports,default,navigo_easy,13.00,EUR",
+         "ticket_bus_tram,Ticket Bus-Tram,reduced,navigo_easy,1.00,EUR",
+         "ticket_metro_train_rer,Ticket Métro-Train-RER,reduced,navigo_easy,1.25,EUR",
+         "ticket_airport,Ticket Paris Région <> Aéroports,reduced,navigo_easy,6.50,EUR",
+         "ticket_roissybus,Ticket RoissyBus,default,idfm_app,13.00,EUR",
+         "ticket_roissybus,Ticket RoissyBus,default,mastercard,13.00,EUR"])
+
+    networks = "\n".join(
+        ["network_id,network_name",
+         "network_metro_train,Métro-Train-RER",
+         "network_bus_tram,Bus-Tram",
+         "network_roissybus,RoissyBus",])
+
+    # On associe un ticket à un réseau (bus-tram ou métro-train-rer)
     fare_leg_rules = "\n".join(
-        ["network_id,from_area_id,to_area_id,fare_product_id",
-         #  ",area_airport,,ticket_airport",
-         #  ",,area_airport,ticket_airport",
-         "network_rer,,,ticket_metro_train_rer",
-         "network_transilien,,,ticket_metro_train_rer",
-         "network_bus,,,ticket_bus_tram",
-         "network_tram,,,ticket_bus_tram",
-         "network_tram_express,,,ticket_metro_train_rer",
-         "network_metro,,,ticket_metro_train_rer"])
+        ["leg_group_id,network_id,from_area_id,to_area_id,fare_product_id,rule_priority",
+         "leg_metro_train,network_metro_train,area_airport,,ticket_airport,9",
+         "leg_metro_train,network_metro_train,,area_airport,ticket_airport,9",
+         "leg_roissybus,network_roissybus,,,ticket_roissybus,8",
+         "leg_metro_train,network_metro_train,,,ticket_metro_train_rer,7",
+         "leg_bus_tram,network_bus_tram,,,ticket_bus_tram,6",])
 
-    fare_media = "\n".join(["fare_media_id,fare_media_name,fare_media_type",
-                            "navigo_easy,Navigo Easy,2",
-                            "idfm_app,Application Île-de-France Mobilités,4",
-                            "ios_wallet,Apple Wallet,4"])
+    fare_transfer_rules = "\n".join(
+        ["from_leg_group_id,to_leg_group_id,transfer_count,duration_limit,duration_limit_type,fare_transfer_type",
+         "leg_metro_train,leg_metro_train,-1,7200,1,0",
+         "leg_bus_tram,leg_bus_tram,-1,5400,1,0"])
 
-    rider_categories = "\n".join(["rider_category_id,rider_category_name,is_default_fare_category,eligibility_url",
-                                  "default,Plein tarif,1,",
-                                  "reduced,Tarif réduit,0,https://www.iledefrance-mobilites.fr/titres-et-tarifs/tarifs-reduits"])
+    areas = "\n".join(
+        ["area_id,area_name",
+         "area_airport,",
+         "area_default,",])
 
-    networks = "\n".join(["network_id,network_name",
-                          "network_rer", "RER",
-                          "network_transilien", "Transilien",
-                          "network_bus", "Bus",
-                          "network_tram", "Tramway",
-                          "network_tram_express", "Tramway Express",
-                          "network_metro", "Métro",])
+    stop_areas = "area_id,stop_id"
+
+    area_airport_stop_ids = [
+        "IDFM:monomodalStopPlace:462398", "IDFM:monomodalStopPlace:473364"]
+
+    with open(f"{feed_id}/stops.txt", "r") as f:
+        header = f.readline().strip().split(",")
+        for line in f:
+            stop = dict(zip(header, line.strip().split(",")))
+
+            if stop["stop_id"] in area_airport_stop_ids:
+                stop_areas += f"\narea_airport,{stop['stop_id']}"
+            else:
+                stop_areas += f"\narea_default,{stop['stop_id']}"
 
     route_networks = "route_id,network_id"
 
@@ -222,10 +252,11 @@ def add_IDFM_fares():
             else:
                 network_id = "network_rer"
 
-            route_networks += f"{route['route_id']},{network_id}\n"
+            route_networks += f"\n{route['route_id']},{network_id}"
 
     files = [("fare_products.txt", fare_products),
              ("fare_leg_rules.txt", fare_leg_rules),
+             ("fare_transfer_rules.txt", fare_transfer_rules),
              ("fare_media.txt", fare_media),
              ("rider_categories.txt", rider_categories),
              ("networks.txt", networks),
@@ -394,7 +425,7 @@ def generate_otp_config():
         f.write(json.dumps(otp_config, indent=2))
 
 
-def main(only: Optional[str] = None):
+def main(only: Optional[str] = None, zip: bool = False):
     generate_otp_build_config(only)
     generate_otp_config()
 
@@ -418,6 +449,14 @@ def main(only: Optional[str] = None):
         if feed_id == "fr-idf":
             add_IDFM_fares()
 
+    if only and zip:
+        with zipfile.ZipFile(f"{only}.zip", "w") as zipf:
+            for root, dirs, files in os.walk(only):
+                for file in files:
+                    if file.endswith(".txt"):
+                        zipf.write(os.path.join(root, file),
+                                   os.path.relpath(os.path.join(root, file), only))
+
 
 if __name__ == "__main__":
-    main(only="fr-idf")
+    main(only="fr-idf", zip=True)
