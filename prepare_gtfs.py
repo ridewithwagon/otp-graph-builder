@@ -173,7 +173,7 @@ def add_IDFM_fares():
         ["fare_media_id,fare_media_name,fare_media_type",
          "navigo_easy,Navigo Easy,2",
          "idfm_app,Application Île-de-France Mobilités,4",
-         "ios_wallet,Apple Wallet,4"
+         "ios_wallet,Apple Wallet,4",
          "mastercard,,3"])
 
     rider_categories = "\n".join(
@@ -219,8 +219,15 @@ def add_IDFM_fares():
 
     stop_areas = "area_id,stop_id"
 
-    area_airport_stop_ids = [
+    rer_b_airport_stop_ids = [
         "IDFM:monomodalStopPlace:462398", "IDFM:monomodalStopPlace:473364"]
+    m_14_airport_stop_ids = [
+        "stop_point:IDFM:490908", "stop_point:IDFM:490917"]
+    orlyval_stop_ids = ["stop_point:IDFM:462400", "stop_point:IDFM:463014",
+                        "stop_point:IDFM:474424", "stop_point:IDFM:473828", "stop_point:IDFM:473827"]
+
+    area_airport_stop_ids = rer_b_airport_stop_ids + \
+        m_14_airport_stop_ids + orlyval_stop_ids
 
     with open(f"{feed_id}/stops.txt", "r") as f:
         header = f.readline().strip().split(",")
@@ -239,18 +246,12 @@ def add_IDFM_fares():
         for line in f:
             route = dict(zip(header, line.strip().split(",")))
 
-            if route["route_type"] == "3":
-                network_id = "network_bus"
-            elif route["route_type"] == "1":
-                network_id = "network_metro"
-            if route["route_short_name"] in ["T1", "T2", "T3a", "T3b", "T4", "T5", "T6", "T7", "T8", "T9", "T10"]:
-                network_id = "network_tram"
-            elif route["route_short_name"] in ["T11", "T12", "T13", "T14"]:
-                network_id = "network_tram_express"
-            elif route["route_short_name"] >= "E":
-                network_id = "network_transilien"
+            if route["route_short_name"] == "ROISSYBUS":
+                network_id = "network_roissybus"
+            if route["route_type"] == ["3"] or route["route_short_name"] in ["T1", "T2", "T3a", "T3b", "T4", "T5", "T6", "T7", "T8", "T9", "T10"]:
+                network_id = "network_bus_tram"
             else:
-                network_id = "network_rer"
+                network_id = "network_metro_train"
 
             route_networks += f"\n{route['route_id']},{network_id}"
 
@@ -260,7 +261,9 @@ def add_IDFM_fares():
              ("fare_media.txt", fare_media),
              ("rider_categories.txt", rider_categories),
              ("networks.txt", networks),
-             ("route_networks.txt", route_networks)]
+             ("route_networks.txt", route_networks),
+             ("areas.txt", areas),
+             ("stop_areas.txt", stop_areas)]
     for filename, content in files:
         with open(f"{feed_id}/" + filename, "w") as f:
             f.write(content)
