@@ -221,10 +221,9 @@ def add_IDFM_fares():
 
     rer_b_airport_stop_ids = [
         "IDFM:monomodalStopPlace:462398", "IDFM:monomodalStopPlace:473364"]
-    m_14_airport_stop_ids = [
-        "stop_point:IDFM:490908", "stop_point:IDFM:490917"]
-    orlyval_stop_ids = ["stop_point:IDFM:462400", "stop_point:IDFM:463014",
-                        "stop_point:IDFM:474424", "stop_point:IDFM:473828", "stop_point:IDFM:473827"]
+    m_14_airport_stop_ids = ["IDFM:490908", "IDFM:490917"]
+    orlyval_stop_ids = ["IDFM:462400", "IDFM:463014",
+                        "IDFM:474424", "IDFM:473828", "IDFM:473827"]
 
     area_airport_stop_ids = rer_b_airport_stop_ids + \
         m_14_airport_stop_ids + orlyval_stop_ids
