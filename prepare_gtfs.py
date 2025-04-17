@@ -174,7 +174,8 @@ def add_IDFM_fares():
          "navigo_easy,Navigo Easy,2",
          "idfm_app,Application Île-de-France Mobilités,4",
          "ios_wallet,Apple Wallet,4",
-         "mastercard,,3"])
+         "mastercard,,3",
+         "liberte_plus,Liberté +,2"])
 
     rider_categories = "\n".join(
         ["rider_category_id,rider_category_name,is_default_fare_category,eligibility_url",
@@ -183,12 +184,23 @@ def add_IDFM_fares():
 
     fare_products = "\n".join(
         ["fare_product_id,fare_product_name,rider_category_id,fare_media_id,amount,currency",
+         # tarif normal
          "ticket_bus_tram,Ticket Bus-Tram,default,navigo_easy,2.00,EUR",
          "ticket_metro_train_rer,Ticket Métro-Train-RER,default,navigo_easy,2.50,EUR",
          "ticket_airport,Ticket Paris Région <> Aéroports,default,navigo_easy,13.00,EUR",
+         # liberté + tarif normal
+         "ticket_bus_tram,Ticket Bus-Tram,default,liberte_plus,1.60,EUR",
+         "ticket_metro_train_rer,Ticket Métro-Train-RER,default,liberte_plus,1.99,EUR",
+         "ticket_airport,Ticket Paris Région <> Aéroports,default,liberte_plus,13.00,EUR",
+         # tarif réduit
          "ticket_bus_tram,Ticket Bus-Tram,reduced,navigo_easy,1.00,EUR",
          "ticket_metro_train_rer,Ticket Métro-Train-RER,reduced,navigo_easy,1.25,EUR",
          "ticket_airport,Ticket Paris Région <> Aéroports,reduced,navigo_easy,6.50,EUR",
+         # liberté + tarif réduit
+         "ticket_bus_tram,Ticket Bus-Tram,reduced,liberte_plus,0.80,EUR",
+         "ticket_metro_train_rer,Ticket Métro-Train-RER,reduced,liberte_plus,0.99,EUR",
+         "ticket_airport,Ticket Paris Région <> Aéroports,reduced,liberte_plus,6.50,EUR",
+         # Roissy bus
          "ticket_roissybus,Ticket RoissyBus,default,idfm_app,13.00,EUR",
          "ticket_roissybus,Ticket RoissyBus,default,mastercard,13.00,EUR"])
 
@@ -204,6 +216,7 @@ def add_IDFM_fares():
          "leg_metro_train,network_metro_train,area_airport,,ticket_airport,9",
          "leg_metro_train,network_metro_train,,area_airport,ticket_airport,9",
          "leg_roissybus,network_roissybus,,,ticket_roissybus,8",
+         "leg_roissybus,network_roissybus,,,ticket_airport,8",
          "leg_metro_train,network_metro_train,,,ticket_metro_train_rer,7",
          "leg_bus_tram,network_bus_tram,,,ticket_bus_tram,6",])
 
@@ -461,4 +474,4 @@ def main(only: Optional[str] = None, zip: bool = False):
 
 
 if __name__ == "__main__":
-    main(only="fr-idf", zip=True)
+    main()
