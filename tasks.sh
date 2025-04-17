@@ -1,5 +1,5 @@
 # On ne génère les rues qu'une fois par mois
-if [ $(date +%d) -eq 29 ]; then
+if [ $(date +%d) -eq 17 ]; then
     python3 prepare_osm.py
     java -Xmx20G -jar otp-2.6.0-shaded.jar --buildStreet .
 else
