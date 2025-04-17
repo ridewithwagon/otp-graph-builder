@@ -1,16 +1,13 @@
-# On ne génère les rues qu'une fois par mois
-if [ $(date +%d) -eq 17 ]; then
-    python3 prepare_osm.py
-    java -Xmx20G -jar otp-2.6.0-shaded.jar --buildStreet .
-else
-    wget https://r2-wnam-wagon-prodassets-otp-graph.arno.cl/streetGraph.obj
-fi
+set -e
+
+wget https://r2-wnam-wagon-prodassets-otp-graph.arno.cl/streetGraph.otp2.7.0.obj -O streetGraph.obj
 
 python3 prepare_gtfs.py
 
-java -Xmx20G -jar otp-2.6.0-shaded.jar --loadStreet --save .
+java -Xmx20G -jar otp.jar --loadStreet --save .
 
-mkdir external
+mkdir -p external
 cp ./graph.obj ./external/graph.obj
 
-python3 upload.py
+s5cmd --endpoint-url="${AWS_ENDPOINT_URL}" \
+  cp ./graph.obj "s3://${AWS_S3_BUCKET}/graph.otp2.7.0.obj"

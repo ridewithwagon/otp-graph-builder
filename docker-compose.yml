@@ -8,5 +8,8 @@ services:
     volumes:
       - ./data:/app/external
     environment:
-      - ACCESS_KEY_ID=${ACCESS_KEY_ID}
-      - SECRET_ACCESS_KEY=${SECRET_ACCESS_KEY}
+      - AWS_REGION=${AWS_REGION}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_ENDPOINT_URL=${AWS_ENDPOINT_URL}
+      - AWS_S3_BUCKET=${AWS_S3_BUCKET}

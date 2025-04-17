@@ -1,16 +1,18 @@
 FROM alpine:latest
 
-RUN apk update && \
-    apk add openjdk21 python3 py3-boto3 py3-pip py3-requests
-
 RUN mkdir -p /app
 
-RUN wget https://repo1.maven.org/maven2/org/opentripplanner/otp/2.6.0/otp-2.6.0-shaded.jar -O /app/otp-2.6.0-shaded.jar
+RUN apk update && \
+    apk add openjdk21 python3 py3-requests
+
+RUN wget https://github.com/opentripplanner/OpenTripPlanner/releases/download/v2.7.0/otp-shaded-2.7.0.jar -O /app/otp.jar
+
+RUN echo "http://dl-cdn.alpinelinux.org/alpine/edge/testing" >> /etc/apk/repositories
+
+RUN apk add --no-cache s5cmd
 
 COPY tasks.sh /app/tasks.sh
-COPY upload.py /app/upload.py
 COPY prepare_gtfs.py /app/prepare_gtfs.py
-COPY prepare_osm.py /app/prepare_osm.py
 
 RUN chmod +x /app/tasks.sh
 
