@@ -174,7 +174,7 @@ def add_IDFM_fares():
          "navigo_easy,Navigo Easy,2",
          "idfm_app,Application Île-de-France Mobilités,4",
          "ios_wallet,Apple Wallet,4",
-         "mastercard,,3",
+         "mastercard,Mastercard,3",
          "liberte_plus,Liberté +,2"])
 
     rider_categories = "\n".join(
