@@ -204,7 +204,7 @@ def add_IDFM_fares():
          "ticket_roissybus,Ticket RoissyBus,default,idfm_app,13.00,EUR",
          "ticket_roissybus,Ticket RoissyBus,default,mastercard,13.00,EUR",
          # Free ticket to use in transfers (OTP bug ?)
-         ",".join(["ticket_free", "", "", "", "0.00", "EUR"]),])
+         ",".join(["ticket_free", "Correspondance gratuite", "", "", "0.00", "EUR"]),])
 
     networks = "\n".join(
         ["network_id,network_name",
@@ -476,4 +476,4 @@ def main(only: Optional[str] = None, zip: bool = False):
 
 
 if __name__ == "__main__":
-    main(only="fr-idf")
+    main()
