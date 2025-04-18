@@ -168,71 +168,16 @@ def add_IDFM_fares():
     Add fares to IDFM GTFS feed
     """
     feed_id = "fr-idf"
+    ticket_agency_id = "IDFM:71"
 
-    fare_media = "\n".join(
-        ["fare_media_id,fare_media_name,fare_media_type",
-         "navigo_easy,Navigo Easy,2",
-         "idfm_app,Application Île-de-France Mobilités,4",
-         "ios_wallet,Apple Wallet,4",
-         "mastercard,Mastercard,3",
-         "liberte_plus,Liberté +,2"])
+    fare_attributes = "\n".join(
+        ["fare_id,price,currency_type,payment_method,transfers,agency_id,transfer_duration",
+         f"ticket_bus_tram,2.00,EUR,1,,{ticket_agency_id},5400",
+         f"ticket_metro_train_rer,2.50,EUR,1,,{ticket_agency_id},7200",
+         f"ticket_airport,13.00,EUR,1,,{ticket_agency_id},7200",
+         ])
 
-    rider_categories = "\n".join(
-        ["rider_category_id,rider_category_name,is_default_fare_category,eligibility_url",
-         "default,Plein tarif,1,",
-         "reduced,Tarif réduit,0,https://www.iledefrance-mobilites.fr/titres-et-tarifs/tarifs-reduits"])
-
-    fare_products = "\n".join(
-        ["fare_product_id,fare_product_name,rider_category_id,fare_media_id,amount,currency",
-         # tarif normal
-         "ticket_bus_tram,Ticket Bus-Tram,default,navigo_easy,2.00,EUR",
-         "ticket_metro_train_rer,Ticket Métro-Train-RER,default,navigo_easy,2.50,EUR",
-         "ticket_airport,Ticket Paris Région <> Aéroports,default,navigo_easy,13.00,EUR",
-         # liberté + tarif normal
-         "ticket_bus_tram,Ticket Bus-Tram,default,liberte_plus,1.60,EUR",
-         "ticket_metro_train_rer,Ticket Métro-Train-RER,default,liberte_plus,1.99,EUR",
-         "ticket_airport,Ticket Paris Région <> Aéroports,default,liberte_plus,13.00,EUR",
-         # tarif réduit
-         "ticket_bus_tram,Ticket Bus-Tram,reduced,navigo_easy,1.00,EUR",
-         "ticket_metro_train_rer,Ticket Métro-Train-RER,reduced,navigo_easy,1.25,EUR",
-         "ticket_airport,Ticket Paris Région <> Aéroports,reduced,navigo_easy,6.50,EUR",
-         # liberté + tarif réduit
-         "ticket_bus_tram,Ticket Bus-Tram,reduced,liberte_plus,0.80,EUR",
-         "ticket_metro_train_rer,Ticket Métro-Train-RER,reduced,liberte_plus,0.99,EUR",
-         "ticket_airport,Ticket Paris Région <> Aéroports,reduced,liberte_plus,6.50,EUR",
-         # Roissy bus
-         "ticket_roissybus,Ticket RoissyBus,default,idfm_app,13.00,EUR",
-         "ticket_roissybus,Ticket RoissyBus,default,mastercard,13.00,EUR",
-         # Free ticket to use in transfers (OTP bug ?)
-         ",".join(["ticket_free", "Correspondance gratuite", "", "", "0.00", "EUR"]),])
-
-    networks = "\n".join(
-        ["network_id,network_name",
-         "network_metro_train,Métro-Train-RER",
-         "network_bus_tram,Bus-Tram",
-         "network_roissybus,RoissyBus",])
-
-    # On associe un ticket à un réseau (bus-tram ou métro-train-rer)
-    fare_leg_rules = "\n".join(
-        ["leg_group_id,network_id,from_area_id,to_area_id,fare_product_id,rule_priority",
-         "leg_metro_train,network_metro_train,area_airport,,ticket_airport,9",
-         "leg_metro_train,network_metro_train,,area_airport,ticket_airport,9",
-         "leg_roissybus,network_roissybus,,,ticket_roissybus,8",
-         "leg_roissybus,network_roissybus,,,ticket_airport,8",
-         "leg_metro_train,network_metro_train,,,ticket_metro_train_rer,7",
-         "leg_bus_tram,network_bus_tram,,,ticket_bus_tram,6",])
-
-    fare_transfer_rules = "\n".join(
-        ["from_leg_group_id,to_leg_group_id,transfer_count,duration_limit,duration_limit_type,fare_transfer_type,fare_product_id",
-         "leg_metro_train,leg_metro_train,-1,7200,1,0,ticket_free",
-         "leg_bus_tram,leg_bus_tram,-1,5400,1,0,ticket_free"])
-
-    areas = "\n".join(
-        ["area_id,area_name",
-         "area_airport,Tarification spéciale aéroport",
-         "area_default,",])
-
-    stop_areas = "area_id,stop_id"
+    fares_rules = "fare_id,route_id,origin_id,destination_id"
 
     rer_b_airport_stop_ids = [
         "IDFM:monomodalStopPlace:462398", "IDFM:monomodalStopPlace:473364"]
@@ -243,17 +188,19 @@ def add_IDFM_fares():
     area_airport_stop_ids = rer_b_airport_stop_ids + \
         m_14_airport_stop_ids + orlyval_stop_ids
 
-    with open(f"{feed_id}/stops.txt", "r") as f:
-        header = f.readline().strip().split(",")
-        for line in f:
-            stop = dict(zip(header, line.strip().split(",")))
+    with open(f"{feed_id}/stops.txt", "r", newline='', encoding="utf-8") as f:
+        reader = csv.DictReader(f)
+        stops = list(reader)
+        fieldnames = reader.fieldnames
 
-            if stop["stop_id"] in area_airport_stop_ids:
-                stop_areas += f"\narea_airport,{stop['stop_id']}"
-            else:
-                stop_areas += f"\narea_default,{stop['stop_id']}"
+    for stop in stops:
+        if stop["stop_id"] in area_airport_stop_ids:
+            stop["zone_id"] = "zone_airport"
 
-    route_networks = "route_id,network_id"
+    with open(f"{feed_id}/stops.txt", "w", newline='', encoding="utf-8") as f:
+        writer = csv.DictWriter(f, fieldnames=fieldnames)
+        writer.writeheader()
+        writer.writerows(stops)
 
     with open(f"{feed_id}/routes.txt", "r") as f:
         header = f.readline().strip().split(",")
@@ -261,23 +208,17 @@ def add_IDFM_fares():
             route = dict(zip(header, line.strip().split(",")))
 
             if route["route_short_name"] == "ROISSYBUS":
-                network_id = "network_roissybus"
-            if route["route_type"] == ["3"] or route["route_short_name"] in ["T1", "T2", "T3a", "T3b", "T4", "T5", "T6", "T7", "T8", "T9", "T10"]:
-                network_id = "network_bus_tram"
+                fares_rules += f"\nticket_airport,{route['route_id']},,"
+            if route["route_type"] == "3" or route["route_short_name"] in ["T1", "T2", "T3a", "T3b", "T4", "T5", "T6", "T7", "T8", "T9", "T10"]:
+                fares_rules += f"\nticket_bus_tram,{route['route_id']},,"
             else:
-                network_id = "network_metro_train"
+                fares_rules += f"\nticket_metro_train_rer,{route['route_id']},,"
+                fares_rules += f"\nticket_airport,{route['route_id']},zone_airport,"
+                fares_rules += f"\nticket_airport,{route['route_id']},,zone_airport"
+                fares_rules += f"\nticket_airport,{route['route_id']},,"
 
-            route_networks += f"\n{route['route_id']},{network_id}"
-
-    files = [("fare_products.txt", fare_products),
-             ("fare_leg_rules.txt", fare_leg_rules),
-             ("fare_transfer_rules.txt", fare_transfer_rules),
-             ("fare_media.txt", fare_media),
-             ("rider_categories.txt", rider_categories),
-             ("networks.txt", networks),
-             ("route_networks.txt", route_networks),
-             ("areas.txt", areas),
-             ("stop_areas.txt", stop_areas)]
+    files = [("fare_attributes.txt", fare_attributes),
+             ("fare_rules.txt", fares_rules)]
     for filename, content in files:
         with open(f"{feed_id}/" + filename, "w") as f:
             f.write(content)
