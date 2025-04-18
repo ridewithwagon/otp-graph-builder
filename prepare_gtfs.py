@@ -202,7 +202,9 @@ def add_IDFM_fares():
          "ticket_airport,Ticket Paris Région <> Aéroports,reduced,liberte_plus,6.50,EUR",
          # Roissy bus
          "ticket_roissybus,Ticket RoissyBus,default,idfm_app,13.00,EUR",
-         "ticket_roissybus,Ticket RoissyBus,default,mastercard,13.00,EUR"])
+         "ticket_roissybus,Ticket RoissyBus,default,mastercard,13.00,EUR",
+         # Free ticket to use in transfers (OTP bug ?)
+         ",".join(["ticket_free", "", "", "", "0.00", "EUR"]),])
 
     networks = "\n".join(
         ["network_id,network_name",
@@ -221,13 +223,13 @@ def add_IDFM_fares():
          "leg_bus_tram,network_bus_tram,,,ticket_bus_tram,6",])
 
     fare_transfer_rules = "\n".join(
-        ["from_leg_group_id,to_leg_group_id,transfer_count,duration_limit,duration_limit_type,fare_transfer_type",
-         "leg_metro_train,leg_metro_train,-1,7200,1,0",
-         "leg_bus_tram,leg_bus_tram,-1,5400,1,0"])
+        ["from_leg_group_id,to_leg_group_id,transfer_count,duration_limit,duration_limit_type,fare_transfer_type,fare_product_id",
+         "leg_metro_train,leg_metro_train,-1,7200,1,0,ticket_free",
+         "leg_bus_tram,leg_bus_tram,-1,5400,1,0,ticket_free"])
 
     areas = "\n".join(
         ["area_id,area_name",
-         "area_airport,",
+         "area_airport,Tarification spéciale aéroport",
          "area_default,",])
 
     stop_areas = "area_id,stop_id"
@@ -474,4 +476,4 @@ def main(only: Optional[str] = None, zip: bool = False):
 
 
 if __name__ == "__main__":
-    main()
+    main(only="fr-idf")
