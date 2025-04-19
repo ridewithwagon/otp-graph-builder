@@ -183,11 +183,8 @@ def add_IDFM_fares():
     rer_b_airport_stop_ids = [
         "IDFM:monomodalStopPlace:462398", "IDFM:monomodalStopPlace:473364"]
     m_14_airport_stop_ids = ["IDFM:490908", "IDFM:490917"]
-    orlyval_stop_ids = ["IDFM:462400", "IDFM:463014",
-                        "IDFM:474424", "IDFM:473828", "IDFM:473827"]
 
-    area_airport_stop_ids = rer_b_airport_stop_ids + \
-        m_14_airport_stop_ids + orlyval_stop_ids
+    area_airport_stop_ids = rer_b_airport_stop_ids + m_14_airport_stop_ids
 
     with open(f"{feed_id}/stops.txt", "r", newline='', encoding="utf-8") as f:
         reader = csv.DictReader(f)
@@ -207,9 +204,9 @@ def add_IDFM_fares():
         for line in f:
             route = dict(zip(header, line.strip().split(",")))
 
-            if route["route_short_name"] == "CDGVAL":
+            if route["route_short_name"] == "CDG VAL":
                 fares_rules += f"\nticket_free,{route['route_id']},,"
-            elif route["route_short_name"] == "ROISSYBUS":
+            elif route["route_short_name"] == "ROISSYBUS" or route["route_short_name"] == "ORLYVAL":
                 fares_rules += f"\nticket_airport,{route['route_id']},,"
             elif route["route_type"] == "3" or route["route_short_name"] in ["T1", "T2", "T3a", "T3b", "T4", "T5", "T6", "T7", "T8", "T9", "T10"]:
                 fares_rules += f"\nticket_bus_tram,{route['route_id']},,"
