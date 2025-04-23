@@ -233,6 +233,7 @@ def add_IDFM_fares():
             fares_rules += f"\nticket_airport,{route['route_id']},zone_default,zone_default"
             fares_rules += f"\nticket_airport,{route['route_id']},zone_airport,zone_default"
             fares_rules += f"\nticket_airport,{route['route_id']},zone_default,zone_airport"
+            fares_rules += f"\nticket_airport,{route['route_id']},zone_airport,zone_airport"
 
     with open(f"{feed_id}/routes.txt", "w", newline='', encoding="utf-8") as f:
         writer = csv.DictWriter(f, fieldnames=fieldnames)
