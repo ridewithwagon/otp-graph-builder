@@ -4,7 +4,7 @@ wget https://r2-wnam-wagon-prodassets-otp-graph.arno.cl/streetGraph.otp2.7.0.obj
 
 python3 prepare_gtfs.py
 
-java -Xmx20G -jar otp.jar --loadStreet --save .
+java -Xmx18G -jar otp.jar --loadStreet --save .
 
 mkdir -p external
 cp ./graph.obj ./external/graph.obj
