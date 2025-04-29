@@ -22,7 +22,7 @@ s5cmd --endpoint-url="${AWS_ENDPOINT_URL}" \
 rm -rf fr-idf/
 mv gtfs-out fr-idf
 
-java -Xmx16G -jar otp.jar --loadStreet --save .
+java $JAVA_HEAP_OPTS -jar otp.jar --loadStreet --save .
 
 mkdir -p external
 cp ./graph.obj ./external/graph.obj
