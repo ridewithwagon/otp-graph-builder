@@ -215,6 +215,8 @@ def add_IDFM_fares():
             fares_rules += f"\nticket_free,{route['route_id']},,"
             route["route_color"] = "1857B6"
             route["route_text_color"] = "FFFFFF"
+        elif route["route_short_name"] in ["N1", "N2"]:
+            fares_rules += f"\nticket_free,{route['route_id']},,"
         elif route["route_short_name"] in magical_shuttle_route_short_name_map:
             route["route_short_name"] = magical_shuttle_route_short_name_map[
                 route["route_short_name"]]
