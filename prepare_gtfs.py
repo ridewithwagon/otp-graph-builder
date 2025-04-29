@@ -80,8 +80,7 @@ sources: List[SourceDict] = [
         "fix_duplicated_routes": True
     },
     {
-        "url": "https://transport.data.gouv.fr/resources/79642/download",
-        "url_fallback_static": "https://cdn1.arno.cl/2024/10/RLA-20241003.zip",
+        "url": "https://r2-wnam-wagon-prodassets-otp-graph.arno.cl/fr-rla.zip",
         "feed_id": "fr-rla",
     },
     {
